@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   Package,
   ShoppingCart,
@@ -9,36 +10,50 @@ import {
   ArrowDownRight,
 } from "lucide-react"
 
-const stats = [
-  {
-    name: "Ventas del Mes",
-    value: "$847,290",
-    change: "+12.5%",
-    changeType: "positive" as const,
-    icon: DollarSign,
+const reportPeriods = {
+  daily: {
+    label: "Diario",
+    subtitle: "Actividad de hoy",
+    stats: [
+      { name: "Ventas", value: "$28,450", change: "+2.1%", changeType: "positive" as const, icon: DollarSign },
+      { name: "Pedidos", value: "42", change: "+1.8%", changeType: "positive" as const, icon: ShoppingCart },
+      { name: "Productos en Stock", value: "12,804", change: "-0.2%", changeType: "negative" as const, icon: Package },
+      { name: "Ticket Promedio", value: "$676", change: "+0.9%", changeType: "positive" as const, icon: TrendingUp },
+    ],
   },
-  {
-    name: "Pedidos",
-    value: "1,284",
-    change: "+8.2%",
-    changeType: "positive" as const,
-    icon: ShoppingCart,
+  weekly: {
+    label: "Semanal",
+    subtitle: "Actividad de los últimos 7 días",
+    stats: [
+      { name: "Ventas", value: "$184,920", change: "+6.8%", changeType: "positive" as const, icon: DollarSign },
+      { name: "Pedidos", value: "316", change: "+4.5%", changeType: "positive" as const, icon: ShoppingCart },
+      { name: "Productos en Stock", value: "12,831", change: "-1.1%", changeType: "negative" as const, icon: Package },
+      { name: "Ticket Promedio", value: "$585", change: "+1.7%", changeType: "positive" as const, icon: TrendingUp },
+    ],
   },
-  {
-    name: "Productos en Stock",
-    value: "12,847",
-    change: "-2.4%",
-    changeType: "negative" as const,
-    icon: Package,
+  monthly: {
+    label: "Mensual",
+    subtitle: "Actividad del mes en curso",
+    stats: [
+      { name: "Ventas", value: "$847,290", change: "+12.5%", changeType: "positive" as const, icon: DollarSign },
+      { name: "Pedidos", value: "1,284", change: "+8.2%", changeType: "positive" as const, icon: ShoppingCart },
+      { name: "Productos en Stock", value: "12,847", change: "-2.4%", changeType: "negative" as const, icon: Package },
+      { name: "Ticket Promedio", value: "$659", change: "+4.1%", changeType: "positive" as const, icon: TrendingUp },
+    ],
   },
-  {
-    name: "Ticket Promedio",
-    value: "$659",
-    change: "+4.1%",
-    changeType: "positive" as const,
-    icon: TrendingUp,
+  yearly: {
+    label: "Anual",
+    subtitle: "Actividad del año",
+    stats: [
+      { name: "Ventas", value: "$9,842,100", change: "+18.9%", changeType: "positive" as const, icon: DollarSign },
+      { name: "Pedidos", value: "14,782", change: "+15.2%", changeType: "positive" as const, icon: ShoppingCart },
+      { name: "Productos en Stock", value: "12,960", change: "+3.8%", changeType: "positive" as const, icon: Package },
+      { name: "Ticket Promedio", value: "$666", change: "+2.4%", changeType: "positive" as const, icon: TrendingUp },
+    ],
   },
-]
+} as const
+
+type ReportPeriod = keyof typeof reportPeriods
 
 const recentOrders = [
   {
@@ -113,6 +128,9 @@ function getStatusColor(status: string) {
 }
 
 export default function AdminDashboard() {
+  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>("monthly")
+  const periodData = reportPeriods[reportPeriod]
+
   return (
     <div className="space-y-6">
       <div>
@@ -122,9 +140,29 @@ export default function AdminDashboard() {
         </p>
       </div>
 
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Reporte del periodo</p>
+            <p className="text-sm text-muted-foreground">{periodData.subtitle}</p>
+          </div>
+          <select
+            value={reportPeriod}
+            onChange={(e) => setReportPeriod(e.target.value as ReportPeriod)}
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            {Object.entries(reportPeriods).map(([key, value]) => (
+              <option key={key} value={key}>
+                {value.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {periodData.stats.map((stat) => (
           <div
             key={stat.name}
             className="rounded-xl border border-border bg-card p-6"

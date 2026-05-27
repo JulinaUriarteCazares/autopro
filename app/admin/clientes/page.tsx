@@ -102,9 +102,53 @@ const tierConfig = {
   wholesale: { label: "Mayoreo", color: "bg-blue-500/20 text-blue-400" },
 }
 
+const reportPeriods = {
+  daily: {
+    label: "Diario",
+    subtitle: "Clientes y actividad de hoy",
+    cards: [
+      { name: "Nuevos clientes", value: "6" },
+      { name: "Recompras", value: "14" },
+      { name: "Ticket promedio", value: "$1,240" },
+    ],
+  },
+  weekly: {
+    label: "Semanal",
+    subtitle: "Clientes y actividad de los últimos 7 días",
+    cards: [
+      { name: "Nuevos clientes", value: "28" },
+      { name: "Recompras", value: "72" },
+      { name: "Ticket promedio", value: "$1,480" },
+    ],
+  },
+  monthly: {
+    label: "Mensual",
+    subtitle: "Clientes y actividad del mes en curso",
+    cards: [
+      { name: "Nuevos clientes", value: "112" },
+      { name: "Recompras", value: "286" },
+      { name: "Ticket promedio", value: "$1,659" },
+    ],
+  },
+  yearly: {
+    label: "Anual",
+    subtitle: "Clientes y actividad del año",
+    cards: [
+      { name: "Nuevos clientes", value: "1,184" },
+      { name: "Recompras", value: "3,220" },
+      { name: "Ticket promedio", value: "$1,802" },
+    ],
+  },
+} as const
+
+type ReportPeriod = keyof typeof reportPeriods
+
 export default function ClientesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [tierFilter, setTierFilter] = useState<string>("all")
+  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>("monthly")
+
+  const periodData = reportPeriods[reportPeriod]
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
@@ -129,47 +173,48 @@ export default function ClientesPage() {
         </button>
       </div>
 
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Reporte del periodo</p>
+            <p className="text-sm text-muted-foreground">{periodData.subtitle}</p>
+          </div>
+          <select
+            value={reportPeriod}
+            onChange={(e) => setReportPeriod(e.target.value as ReportPeriod)}
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            {Object.entries(reportPeriods).map(([key, value]) => (
+              <option key={key} value={key}>
+                {value.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Users className="h-5 w-5 text-primary" />
+        {periodData.cards.map((card, index) => {
+          const icons = [UserPlus, Star, Users] as const
+          const bgClasses = ["bg-primary/10", "bg-yellow-500/10", "bg-blue-500/10"]
+          const textClasses = ["text-primary", "text-yellow-400", "text-blue-400"]
+          const Icon = icons[index]
+
+          return (
+            <div key={card.name} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center gap-3">
+                <div className={`rounded-lg ${bgClasses[index]} p-2`}>
+                  <Icon className={`h-5 w-5 ${textClasses[index]}`} />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{card.value}</p>
+                  <p className="text-sm text-muted-foreground">{card.name}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {customers.length}
-              </p>
-              <p className="text-sm text-muted-foreground">Total Clientes</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-yellow-500/10 p-2">
-              <Star className="h-5 w-5 text-yellow-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {customers.filter((c) => c.tier === "vip").length}
-              </p>
-              <p className="text-sm text-muted-foreground">Clientes VIP</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-500/10 p-2">
-              <Users className="h-5 w-5 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {customers.filter((c) => c.tier === "wholesale").length}
-              </p>
-              <p className="text-sm text-muted-foreground">Mayoristas</p>
-            </div>
-          </div>
-        </div>
+          )
+        })}
       </div>
 
       {/* Table */}

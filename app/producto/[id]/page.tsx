@@ -1,6 +1,7 @@
 "use client"
 
 import { use } from "react"
+import { useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -14,16 +15,38 @@ import {
 import { Header, Sidebar, Footer } from "@/components/layout"
 import { RelatedProductCard } from "@/components/product-card"
 import { CartProvider, useCart } from "@/lib/cart-context"
-import { products } from "@/lib/data"
+import { products, vehicleYears, vehicleMakes, vehicleModels } from "@/lib/data"
 
 function ProductDetailContent({ productId }: { productId: string }) {
   const { addItem } = useCart()
+  const [selectedYear, setSelectedYear] = useState("")
+  const [selectedMake, setSelectedMake] = useState("")
+  const [selectedModel, setSelectedModel] = useState("")
 
   const product = products.find((p) => p.id === productId) || products[4] // Default to brake pads
+
+  const availableModels = useMemo(() => {
+    if (!selectedMake) {
+      return []
+    }
+
+    return vehicleModels[selectedMake] ?? []
+  }, [selectedMake])
 
   const relatedProducts = products.filter(
     (p) => p.category === product.category && p.id !== product.id
   ).slice(0, 3)
+
+  const handleMakeChange = (make: string) => {
+    setSelectedMake(make)
+    setSelectedModel("")
+  }
+
+  const handleCompatibilityCheck = () => {
+    if (selectedYear && selectedMake && selectedModel) {
+      return
+    }
+  }
 
   const handleAddToCart = () => {
     addItem({
@@ -143,26 +166,59 @@ function ProductDetailContent({ productId }: { productId: string }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="relative">
-                <select className="h-10 w-full appearance-none rounded border border-border bg-input px-3 pr-8 text-sm text-foreground">
-                  <option>Año</option>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="h-10 w-full appearance-none rounded border border-border bg-input px-3 pr-8 text-sm text-foreground"
+                >
+                  <option value="">Año</option>
+                  {vehicleYears.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               </div>
               <div className="relative">
-                <select className="h-10 w-full appearance-none rounded border border-border bg-input px-3 pr-8 text-sm text-foreground">
-                  <option>Marca</option>
+                <select
+                  value={selectedMake}
+                  onChange={(e) => handleMakeChange(e.target.value)}
+                  className="h-10 w-full appearance-none rounded border border-border bg-input px-3 pr-8 text-sm text-foreground"
+                >
+                  <option value="">Marca</option>
+                  {vehicleMakes.map((make) => (
+                    <option key={make} value={make}>
+                      {make}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               </div>
               <div className="relative col-span-2">
-                <select className="h-10 w-full appearance-none rounded border border-border bg-input px-3 pr-8 text-sm text-foreground">
-                  <option>Modelo</option>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  disabled={!selectedMake}
+                  className="h-10 w-full appearance-none rounded border border-border bg-input px-3 pr-8 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <option value="">
+                    {selectedMake ? "Modelo" : "Selecciona una marca primero"}
+                  </option>
+                  {availableModels.map((model) => (
+                    <option key={model} value={model}>
+                      {model}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               </div>
             </div>
 
-            <button className="mt-4 w-full rounded bg-secondary py-2.5 text-sm font-medium uppercase tracking-wider text-foreground transition-colors hover:bg-secondary/80">
+            <button
+              onClick={handleCompatibilityCheck}
+              className="mt-4 w-full rounded bg-secondary py-2.5 text-sm font-medium uppercase tracking-wider text-foreground transition-colors hover:bg-secondary/80"
+            >
               Comprobar Vehículo
             </button>
           </div>

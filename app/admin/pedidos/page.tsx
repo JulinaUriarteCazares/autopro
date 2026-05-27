@@ -13,6 +13,7 @@ import {
   Clock,
   CheckCircle,
   Truck,
+  DollarSign,
 } from "lucide-react"
 
 interface Order {
@@ -103,9 +104,57 @@ const paymentConfig = {
   refunded: { label: "Reembolsado", color: "bg-gray-500/20 text-gray-400" },
 }
 
+const reportPeriods = {
+  daily: {
+    label: "Diario",
+    subtitle: "Pedidos de hoy",
+    cards: [
+      { name: "Pedidos", value: "42" },
+      { name: "Pagados", value: "31" },
+      { name: "Entregados", value: "18" },
+      { name: "Ingresos", value: "$28,450" },
+    ],
+  },
+  weekly: {
+    label: "Semanal",
+    subtitle: "Pedidos de los últimos 7 días",
+    cards: [
+      { name: "Pedidos", value: "316" },
+      { name: "Pagados", value: "248" },
+      { name: "Entregados", value: "174" },
+      { name: "Ingresos", value: "$184,920" },
+    ],
+  },
+  monthly: {
+    label: "Mensual",
+    subtitle: "Pedidos del mes en curso",
+    cards: [
+      { name: "Pedidos", value: "1,284" },
+      { name: "Pagados", value: "1,102" },
+      { name: "Entregados", value: "934" },
+      { name: "Ingresos", value: "$847,290" },
+    ],
+  },
+  yearly: {
+    label: "Anual",
+    subtitle: "Pedidos del año",
+    cards: [
+      { name: "Pedidos", value: "14,782" },
+      { name: "Pagados", value: "13,310" },
+      { name: "Entregados", value: "12,405" },
+      { name: "Ingresos", value: "$9,842,100" },
+    ],
+  },
+} as const
+
+type ReportPeriod = keyof typeof reportPeriods
+
 export default function PedidosPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>("monthly")
+
+  const periodData = reportPeriods[reportPeriod]
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -130,60 +179,48 @@ export default function PedidosPage() {
         </button>
       </div>
 
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Reporte del periodo</p>
+            <p className="text-sm text-muted-foreground">{periodData.subtitle}</p>
+          </div>
+          <select
+            value={reportPeriod}
+            onChange={(e) => setReportPeriod(e.target.value as ReportPeriod)}
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            {Object.entries(reportPeriods).map(([key, value]) => (
+              <option key={key} value={key}>
+                {value.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-yellow-500/10 p-2">
-              <Clock className="h-5 w-5 text-yellow-400" />
+        {periodData.cards.map((card, index) => {
+          const icons = [Clock, Package, Truck, DollarSign] as const
+          const bgClasses = ["bg-yellow-500/10", "bg-blue-500/10", "bg-purple-500/10", "bg-green-500/10"]
+          const textClasses = ["text-yellow-400", "text-blue-400", "text-purple-400", "text-green-400"]
+          const Icon = icons[index]
+
+          return (
+            <div key={card.name} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center gap-3">
+                <div className={`rounded-lg ${bgClasses[index]} p-2`}>
+                  <Icon className={`h-5 w-5 ${textClasses[index]}`} />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{card.value}</p>
+                  <p className="text-sm text-muted-foreground">{card.name}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {orders.filter((o) => o.status === "pending").length}
-              </p>
-              <p className="text-sm text-muted-foreground">Pendientes</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-500/10 p-2">
-              <Package className="h-5 w-5 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {orders.filter((o) => o.status === "processing").length}
-              </p>
-              <p className="text-sm text-muted-foreground">En Proceso</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-purple-500/10 p-2">
-              <Truck className="h-5 w-5 text-purple-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {orders.filter((o) => o.status === "shipped").length}
-              </p>
-              <p className="text-sm text-muted-foreground">Enviados</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-green-500/10 p-2">
-              <CheckCircle className="h-5 w-5 text-green-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {orders.filter((o) => o.status === "delivered").length}
-              </p>
-              <p className="text-sm text-muted-foreground">Entregados</p>
-            </div>
-          </div>
-        </div>
+          )
+        })}
       </div>
 
       {/* Table */}

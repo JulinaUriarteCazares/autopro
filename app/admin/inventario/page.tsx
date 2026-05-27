@@ -132,6 +132,47 @@ const products: Product[] = [
 
 const categories = ["Todas", "Frenos", "Filtros", "Encendido", "Admisión", "Suspensión"]
 
+const reportPeriods = {
+  daily: {
+    label: "Diario",
+    subtitle: "Movimientos de hoy",
+    cards: [
+      { name: "Entradas", value: "18" },
+      { name: "Salidas", value: "7" },
+      { name: "Alertas", value: "4" },
+    ],
+  },
+  weekly: {
+    label: "Semanal",
+    subtitle: "Resumen de los últimos 7 días",
+    cards: [
+      { name: "Entradas", value: "92" },
+      { name: "Salidas", value: "41" },
+      { name: "Alertas", value: "9" },
+    ],
+  },
+  monthly: {
+    label: "Mensual",
+    subtitle: "Resumen del mes en curso",
+    cards: [
+      { name: "Entradas", value: "384" },
+      { name: "Salidas", value: "166" },
+      { name: "Alertas", value: "22" },
+    ],
+  },
+  yearly: {
+    label: "Anual",
+    subtitle: "Consolidado del año",
+    cards: [
+      { name: "Entradas", value: "4,280" },
+      { name: "Salidas", value: "2,014" },
+      { name: "Alertas", value: "146" },
+    ],
+  },
+} as const
+
+type ReportPeriod = keyof typeof reportPeriods
+
 function getStatusBadge(status: Product["status"], stock: number) {
   if (stock === 0) {
     return (
@@ -159,6 +200,9 @@ export default function InventarioPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("Todas")
   const [selectedProducts, setSelectedProducts] = useState<number[]>([])
+  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>("monthly")
+
+  const periodData = reportPeriods[reportPeriod]
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -198,47 +242,50 @@ export default function InventarioPage() {
         </button>
       </div>
 
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Reporte del periodo</p>
+            <p className="text-sm text-muted-foreground">{periodData.subtitle}</p>
+          </div>
+          <select
+            value={reportPeriod}
+            onChange={(e) => setReportPeriod(e.target.value as ReportPeriod)}
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            {Object.entries(reportPeriods).map(([key, value]) => (
+              <option key={key} value={key}>
+                {value.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Package className="h-5 w-5 text-primary" />
+        {periodData.cards.map((card, index) => {
+          const icon = index === 0 ? Plus : index === 1 ? Upload : AlertTriangle
+          const colorClass = index === 0 ? "text-primary" : index === 1 ? "text-green-400" : "text-yellow-400"
+          const bgClass = index === 0 ? "bg-primary/10" : index === 1 ? "bg-green-500/10" : "bg-yellow-500/10"
+
+          return (
+            <div key={card.name} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center gap-3">
+                <div className={`rounded-lg ${bgClass} p-2`}>
+                  {(() => {
+                    const Icon = icon
+                    return <Icon className={`h-5 w-5 ${colorClass}`} />
+                  })()}
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{card.value}</p>
+                  <p className="text-sm text-muted-foreground">{card.name}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {products.length}
-              </p>
-              <p className="text-sm text-muted-foreground">Total Productos</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-green-500/10 p-2">
-              <Package className="h-5 w-5 text-green-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {products.filter((p) => p.status === "active").length}
-              </p>
-              <p className="text-sm text-muted-foreground">En Stock</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-yellow-500/10 p-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {products.filter((p) => p.status === "low_stock" || p.stock === 0).length}
-              </p>
-              <p className="text-sm text-muted-foreground">Stock Bajo</p>
-            </div>
-          </div>
-        </div>
+          )
+        })}
       </div>
 
       {/* Filters and Search */}

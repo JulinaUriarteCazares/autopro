@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, ChevronDown, Layers } from "lucide-react"
@@ -39,7 +39,12 @@ export function HeroSection() {
   const [model, setModel] = useState("")
   const [engine, setEngine] = useState("")
 
-  const availableModels = make ? vehicleModels[make] || [] : []
+  const allModels = useMemo(
+    () => Array.from(new Set(Object.values(vehicleModels).flat())),
+    [],
+  )
+
+  const availableModels = make ? vehicleModels[make] || allModels : allModels
 
   return (
     <section className="relative min-h-[400px] overflow-hidden">
@@ -128,10 +133,11 @@ export function HeroSection() {
                 <select
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  disabled={!make}
-                  className="h-10 w-full appearance-none rounded border border-border bg-input px-3 pr-8 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]"
+                  className="h-10 w-full appearance-none rounded border border-border bg-input px-3 pr-8 text-sm text-foreground focus:border-[#800020] focus:outline-none focus:ring-1 focus:ring-[#800020]"
                 >
-                  <option value="">Seleccionar Modelo</option>
+                  <option value="">
+                    {make ? "Seleccionar Modelo" : "Seleccionar Marca primero"}
+                  </option>
                   {availableModels.map((m) => (
                     <option key={m} value={m}>
                       {m}

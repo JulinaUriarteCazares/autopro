@@ -27,9 +27,11 @@ export default function RegistroPage() {
       <div className="relative w-full max-w-md">
         <div className="rounded-lg border-t-2 border-[#800020] bg-card p-8 shadow-2xl">
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight text-[#ffb3b5]">
-              AUTOPRO
-            </h1>
+            <Link href="/" className="inline-block">
+              <h1 className="text-4xl font-extrabold tracking-tight text-[#ffb3b5]">
+                AUTOPRO
+              </h1>
+            </Link>
             <p className="mt-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
               Crear nueva cuenta
             </p>

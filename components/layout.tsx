@@ -4,7 +4,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Search,
-  MapPin,
   ShoppingCart,
   User,
   Settings,
@@ -50,14 +49,6 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link
-              href="#"
-              className="hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground md:flex"
-            >
-              <MapPin className="h-4 w-4" />
-              <span>Store Locator</span>
-            </Link>
-
             <Link href="/carrito" className="relative p-2 hover:text-[#ffb3b5]">
               <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (

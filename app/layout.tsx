@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import Breadcrumbs from "@/components/ui/breadcrumbs"
 import "./globals.css"
 
 const inter = Inter({
@@ -43,10 +44,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className="bg-[#131313]">
+    <html lang="es" className="bg-background">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} bg-background font-sans antialiased text-foreground`}
       >
+        <Breadcrumbs />
         {children}
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>

@@ -15,7 +15,6 @@ import {
   CircleDot,
 } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
-import Breadcrumbs from "@/components/ui/breadcrumbs"
 
 const categories = [
   { id: "engine", name: "Engine", icon: Settings },
@@ -75,9 +74,6 @@ export function Header() {
         </div>
       </header>
 
-      <div className="border-b border-border bg-background">
-        <Breadcrumbs />
-      </div>
     </>
   )
 }

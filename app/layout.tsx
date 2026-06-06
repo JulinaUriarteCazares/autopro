@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { Suspense } from "react"
 import Breadcrumbs from "@/components/ui/breadcrumbs"
 import "./globals.css"
 
@@ -48,7 +49,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} bg-background font-sans antialiased text-foreground`}
       >
-        <Breadcrumbs />
+        <Suspense fallback={null}>
+          <Breadcrumbs />
+        </Suspense>
         {children}
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
